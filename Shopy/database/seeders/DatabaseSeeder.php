@@ -87,6 +87,90 @@ class DatabaseSeeder extends Seeder
             ]);
         }
 
+        $seller3 = Seller::updateOrCreate(
+            ['email' => 'seller3@shopy.com'],
+            [
+                'seller_unique_no' => 'SEL-2026-0003',
+                'seller_name' => 'Delhi Furniture & Home Decor',
+                'password' => Hash::make('password123'),
+                'contact_no' => '+91 98765 43212',
+                'address' => 'Shop 7, Kirti Nagar Furniture Market',
+                'city' => 'Delhi',
+                'state' => 'Delhi',
+                'account_status' => 'active',
+            ]
+        );
+
+        SellerWallet::firstOrCreate(
+            ['seller_id_fk' => $seller3->seller_id_pk],
+            ['available_balance' => 0.00, 'pending_balance' => 0.00]
+        );
+
+        foreach (['Delhi', 'Gurugram', 'Noida', 'Faridabad'] as $city) {
+            SellerCity::firstOrCreate([
+                'seller_id_fk' => $seller3->seller_id_pk,
+                'city_name' => $city,
+            ], [
+                'state' => 'Delhi',
+            ]);
+        }
+
+        $seller4 = Seller::updateOrCreate(
+            ['email' => 'seller4@shopy.com'],
+            [
+                'seller_unique_no' => 'SEL-2026-0004',
+                'seller_name' => 'Chennai Fashion Studio',
+                'password' => Hash::make('password123'),
+                'contact_no' => '+91 98765 43213',
+                'address' => '15, Anna Salai, T. Nagar',
+                'city' => 'Chennai',
+                'state' => 'Tamil Nadu',
+                'account_status' => 'active',
+            ]
+        );
+
+        SellerWallet::firstOrCreate(
+            ['seller_id_fk' => $seller4->seller_id_pk],
+            ['available_balance' => 0.00, 'pending_balance' => 0.00]
+        );
+
+        foreach (['Chennai', 'Coimbatore', 'Madurai'] as $city) {
+            SellerCity::firstOrCreate([
+                'seller_id_fk' => $seller4->seller_id_pk,
+                'city_name' => $city,
+            ], [
+                'state' => 'Tamil Nadu',
+            ]);
+        }
+
+        $seller5 = Seller::updateOrCreate(
+            ['email' => 'seller5@shopy.com'],
+            [
+                'seller_unique_no' => 'SEL-2026-0005',
+                'seller_name' => 'Hyderabad Biryani & Catering Co.',
+                'password' => Hash::make('password123'),
+                'contact_no' => '+91 98765 43214',
+                'address' => '8-2-293, Rd No. 78, Jubilee Hills',
+                'city' => 'Hyderabad',
+                'state' => 'Telangana',
+                'account_status' => 'active',
+            ]
+        );
+
+        SellerWallet::firstOrCreate(
+            ['seller_id_fk' => $seller5->seller_id_pk],
+            ['available_balance' => 0.00, 'pending_balance' => 0.00]
+        );
+
+        foreach (['Hyderabad', 'Secunderabad', 'Warangal'] as $city) {
+            SellerCity::firstOrCreate([
+                'seller_id_fk' => $seller5->seller_id_pk,
+                'city_name' => $city,
+            ], [
+                'state' => 'Telangana',
+            ]);
+        }
+
         // 4. Customers
         Customer::updateOrCreate(
             ['email' => 'customer1@shopy.com'],
@@ -112,6 +196,76 @@ class DatabaseSeeder extends Seeder
                 'address' => 'Villa 12, Green Glen Layout, Bellandur',
                 'city' => 'Bengaluru',
                 'state' => 'Karnataka',
+                'account_status' => 'active',
+            ]
+        );
+
+        Customer::updateOrCreate(
+            ['email' => 'customer3@shopy.com'],
+            [
+                'customer_unique_no' => 'CUS-2026-0003',
+                'customer_name' => 'Rahul Verma',
+                'password' => Hash::make('password123'),
+                'contact_no' => '+91 91234 56782',
+                'address' => 'B-47, Sector 18, Rohini',
+                'city' => 'Delhi',
+                'state' => 'Delhi',
+                'account_status' => 'active',
+            ]
+        );
+
+        Customer::updateOrCreate(
+            ['email' => 'customer4@shopy.com'],
+            [
+                'customer_unique_no' => 'CUS-2026-0004',
+                'customer_name' => 'Anjali Reddy',
+                'password' => Hash::make('password123'),
+                'contact_no' => '+91 91234 56783',
+                'address' => 'Flat 102, Aparna Sarovar Grande, Nallagandla',
+                'city' => 'Hyderabad',
+                'state' => 'Telangana',
+                'account_status' => 'active',
+            ]
+        );
+
+        Customer::updateOrCreate(
+            ['email' => 'customer5@shopy.com'],
+            [
+                'customer_unique_no' => 'CUS-2026-0005',
+                'customer_name' => 'Karthik Subramaniam',
+                'password' => Hash::make('password123'),
+                'contact_no' => '+91 91234 56784',
+                'address' => '23, Besant Nagar, 5th Avenue',
+                'city' => 'Chennai',
+                'state' => 'Tamil Nadu',
+                'account_status' => 'active',
+            ]
+        );
+
+        Customer::updateOrCreate(
+            ['email' => 'customer6@shopy.com'],
+            [
+                'customer_unique_no' => 'CUS-2026-0006',
+                'customer_name' => 'Neha Joshi',
+                'password' => Hash::make('password123'),
+                'contact_no' => '+91 91234 56785',
+                'address' => 'Row House 9, Baner Road, Balewadi',
+                'city' => 'Pune',
+                'state' => 'Maharashtra',
+                'account_status' => 'active',
+            ]
+        );
+
+        Customer::updateOrCreate(
+            ['email' => 'customer7@shopy.com'],
+            [
+                'customer_unique_no' => 'CUS-2026-0007',
+                'customer_name' => 'Amitesh Patel',
+                'password' => Hash::make('password123'),
+                'contact_no' => '+91 91234 56786',
+                'address' => 'C/103, Shivranjani Society, Satellite',
+                'city' => 'Ahmedabad',
+                'state' => 'Gujarat',
                 'account_status' => 'active',
             ]
         );
