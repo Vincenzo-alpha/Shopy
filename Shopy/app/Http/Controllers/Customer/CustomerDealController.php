@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Customer\CounterOfferRequest;
 use App\Models\DealArchive;
 use App\Models\DealMaster;
+use App\Models\Interest;
 use App\Models\Negotiation;
 use App\Models\NegotiationHistory;
 use App\Models\Payment;
@@ -159,6 +160,12 @@ class CustomerDealController
             $deal->update([
                 'deal_status' => 'cancelled',
             ]);
+
+            if ($deal->interest_id_fk) {
+                Interest::where('interest_id_pk', $deal->interest_id_fk)->update([
+                    'interest_status' => 'Deal Denied',
+                ]);
+            }
 
             if ($deal->negotiation) {
                 $deal->negotiation->update([

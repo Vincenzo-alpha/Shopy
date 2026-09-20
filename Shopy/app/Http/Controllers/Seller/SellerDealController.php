@@ -227,6 +227,12 @@ class SellerDealController
                 'deal_status' => 'cancelled',
             ]);
 
+            if ($deal->interest_id_fk) {
+                Interest::where('interest_id_pk', $deal->interest_id_fk)->update([
+                    'interest_status' => 'Deal Denied',
+                ]);
+            }
+
             if ($deal->negotiation) {
                 $deal->negotiation->update([
                     'negotiation_status' => 'rejected',

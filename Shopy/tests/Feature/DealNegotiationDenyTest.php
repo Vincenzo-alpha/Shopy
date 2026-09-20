@@ -7,6 +7,7 @@ use App\Models\Seller;
 use App\Models\Customer;
 use App\Models\ProductService;
 use App\Models\DealArchive;
+use App\Models\Interest;
 use App\Models\Negotiation;
 use App\Models\NegotiationHistory;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
@@ -65,8 +66,17 @@ class DealNegotiationDenyTest extends TestCase
 
     protected function createNegotiatingDeal(): DealArchive
     {
+        $interest = Interest::create([
+            'interest_unique_no' => 'INT-' . strtoupper(Str::random(6)),
+            'seller_id_fk' => $this->seller->seller_id_pk,
+            'customer_id_fk' => $this->customer->customer_id_pk,
+            'prod_service_id_fk' => $this->product->prod_service_id_pk,
+            'interest_status' => 'Converted to deal',
+        ]);
+
         $deal = DealArchive::create([
             'deal_unique_no' => 'DL-TEST-' . strtoupper(Str::random(6)),
+            'interest_id_fk' => $interest->interest_id_pk,
             'seller_id_fk' => $this->seller->seller_id_pk,
             'customer_id_fk' => $this->customer->customer_id_pk,
             'prod_service_id_fk' => $this->product->prod_service_id_pk,
@@ -111,6 +121,7 @@ class DealNegotiationDenyTest extends TestCase
         $deal->refresh();
         $this->assertEquals('cancelled', $deal->deal_status);
         $this->assertEquals('rejected', $deal->negotiation->negotiation_status);
+        $this->assertEquals('Deal Denied', $deal->interest->fresh()->interest_status);
 
         $latestHistory = NegotiationHistory::where('neg_id_fk', $deal->negotiation->neg_id_pk)
             ->latest('history_id_pk')
@@ -119,6 +130,13 @@ class DealNegotiationDenyTest extends TestCase
         $this->assertNotNull($latestHistory);
         $this->assertEquals('customer', $latestHistory->offered_by);
         $this->assertStringContainsString('Price is above my budget', $latestHistory->notes);
+
+        // Verify seller Buyer Interest Requests page reflects Deal Denied
+        $interestPageResponse = $this->actingAs($this->seller, 'seller')
+            ->get(route('seller.interests.index'));
+        $interestPageResponse->assertStatus(200);
+        $interestPageResponse->assertSee('Deal Denied');
+        $interestPageResponse->assertDontSee('Deal Initiated');
     }
 
     public function test_seller_can_deny_customer_counteroffer(): void
@@ -136,6 +154,7 @@ class DealNegotiationDenyTest extends TestCase
         $deal->refresh();
         $this->assertEquals('cancelled', $deal->deal_status);
         $this->assertEquals('rejected', $deal->negotiation->negotiation_status);
+        $this->assertEquals('Deal Denied', $deal->interest->fresh()->interest_status);
 
         $latestHistory = NegotiationHistory::where('neg_id_fk', $deal->negotiation->neg_id_pk)
             ->latest('history_id_pk')

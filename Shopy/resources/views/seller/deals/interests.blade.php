@@ -42,6 +42,8 @@
                         <td>
                             @if($interest->interest_status === 'Active')
                                 <span class="badge bg-success-subtle text-success border border-success px-2 py-1">New Interest</span>
+                            @elseif($interest->interest_status === 'Deal Denied' || ($interest->deal && $interest->deal->deal_status === 'cancelled'))
+                                <span class="badge bg-danger-subtle text-danger border border-danger-subtle px-2 py-1">Deal Denied</span>
                             @elseif($interest->interest_status === 'Converted to deal')
                                 <span class="badge bg-primary-subtle text-primary border border-primary px-2 py-1">Deal Initiated</span>
                             @else
@@ -57,7 +59,7 @@
                                         <i class="bi bi-chat-dots me-1"></i> Initiate Deal
                                     </button>
                                 </form>
-                            @elseif($interest->interest_status === 'Converted to deal' && $interest->deal)
+                            @elseif($interest->deal)
                                 <a href="{{ route('seller.deals.show', $interest->deal->deal_id_pk) }}" class="btn btn-outline-primary btn-sm">
                                     <i class="bi bi-arrow-right-circle me-1"></i> Open Deal
                                 </a>

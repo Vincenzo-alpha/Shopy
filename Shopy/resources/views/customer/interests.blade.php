@@ -55,6 +55,8 @@
                             <td>
                                 @if($interest->interest_status === 'Active')
                                     <span class="badge bg-success-subtle text-success border border-success-subtle px-2 py-1">Active</span>
+                                @elseif($interest->interest_status === 'Deal Denied' || ($interest->deal && $interest->deal->deal_status === 'cancelled'))
+                                    <span class="badge bg-danger-subtle text-danger border border-danger-subtle px-2 py-1">Deal Denied</span>
                                 @elseif($interest->interest_status === 'Converted to deal')
                                     <span class="badge bg-primary-subtle text-primary border border-primary-subtle px-2 py-1">Deal Created</span>
                                 @else
@@ -65,9 +67,9 @@
                                 {{ $interest->created_at->format('M d, Y h:i A') }}
                             </td>
                             <td class="text-end pe-4">
-                                @if($interest->interest_status === 'Converted to deal' && $interest->deal)
-                                    <a href="{{ route('customer.deals.show', $interest->deal->deal_id_pk) }}" class="btn btn-primary btn-sm">
-                                        <i class="bi bi-chat-dots me-1"></i> Negotiate Deal
+                                @if($interest->deal)
+                                    <a href="{{ route('customer.deals.show', $interest->deal->deal_id_pk) }}" class="btn {{ ($interest->interest_status === 'Deal Denied' || $interest->deal->deal_status === 'cancelled') ? 'btn-outline-secondary' : 'btn-primary' }} btn-sm">
+                                        <i class="bi bi-chat-dots me-1"></i> {{ ($interest->interest_status === 'Deal Denied' || $interest->deal->deal_status === 'cancelled') ? 'View Deal' : 'Negotiate Deal' }}
                                     </a>
                                 @elseif($interest->interest_status === 'Active')
                                     <form action="{{ route('customer.interests.withdraw', $interest->interest_id_pk) }}" method="POST" class="d-inline" onsubmit="return confirm('Withdraw interest for this item?');">
