@@ -53,6 +53,8 @@
                                     <span class="badge bg-danger-subtle text-danger border border-danger-subtle px-2 py-1">Payment Pending</span>
                                 @elseif($deal->deal_status === 'in_fulfillment')
                                     <span class="badge bg-success-subtle text-success border border-success-subtle px-2 py-1">Paid • Ready for Collection</span>
+                                @elseif($deal->deal_status === 'cancelled')
+                                    <span class="badge bg-danger-subtle text-danger border border-danger-subtle px-2 py-1">Offer Denied</span>
                                 @else
                                     <span class="badge bg-light text-dark">{{ ucfirst($deal->deal_status) }}</span>
                                 @endif

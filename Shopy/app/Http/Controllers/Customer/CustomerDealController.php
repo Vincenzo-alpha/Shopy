@@ -43,6 +43,14 @@ class CustomerDealController
             ->where('customer_id_fk', $customer->customer_id_pk)
             ->firstOrFail();
 
+        // Ensure completion key is generated and present for in_fulfillment deals
+        if ($deal->deal_status === 'in_fulfillment') {
+            if (!$deal->completion || empty($deal->completion->completion_key)) {
+                $this->transferService->generateCompletionKey($deal->deal_id_pk);
+                $deal->load('completion');
+            }
+        }
+
         $feePreview = null;
         if ($deal->negotiation && $deal->negotiation->seller_negotiation_amt > 0) {
             $feePreview = $this->feeService->calculate((float) $deal->negotiation->seller_negotiation_amt);
@@ -130,6 +138,44 @@ class CustomerDealController
 
         return redirect()->route('customer.deals.payment', $deal->deal_id_pk)
             ->with('success', 'Offer accepted! Please proceed to complete the sandbox payment.');
+    }
+
+    public function denyOffer(Request $request, $id)
+    {
+        $customer = Auth::guard('customer')->user();
+        $deal = DealArchive::with(['product', 'negotiation'])
+            ->where('deal_id_pk', $id)
+            ->where('customer_id_fk', $customer->customer_id_pk)
+            ->firstOrFail();
+
+        if ($deal->deal_status !== 'negotiating') {
+            return back()->with('error', 'Deal is no longer in negotiation state.');
+        }
+
+        $reason = $request->input('reason');
+        $noteText = 'Customer denied the offer.' . ($reason ? ' Reason: ' . $reason : '');
+
+        DB::transaction(function () use ($deal, $noteText) {
+            $deal->update([
+                'deal_status' => 'cancelled',
+            ]);
+
+            if ($deal->negotiation) {
+                $deal->negotiation->update([
+                    'negotiation_status' => 'rejected',
+                ]);
+
+                NegotiationHistory::create([
+                    'neg_id_fk' => $deal->negotiation->neg_id_pk,
+                    'offered_by' => 'customer',
+                    'amount' => (float) ($deal->negotiation->seller_negotiation_amt ?? 0),
+                    'notes' => $noteText,
+                ]);
+            }
+        });
+
+        return redirect()->route('customer.deals.show', $deal->deal_id_pk)
+            ->with('info', 'Offer has been denied. Deal negotiation has been terminated.');
     }
 
     public function paymentScreen($id)

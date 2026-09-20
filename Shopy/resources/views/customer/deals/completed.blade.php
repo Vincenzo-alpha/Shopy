@@ -7,7 +7,7 @@
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
             <h3 class="fw-bold mb-1">Completed Deals History</h3>
-            <p class="text-muted small mb-0">Deals successfully verified and transferred to master records</p>
+            <p class="text-muted small mb-0">Deals successfully verified and transferred to Account records</p>
         </div>
         <a href="{{ route('customer.deals.index') }}" class="btn btn-outline-primary btn-sm">
             <i class="bi bi-briefcase me-1"></i> Active Deals

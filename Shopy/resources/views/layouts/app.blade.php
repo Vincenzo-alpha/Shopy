@@ -443,6 +443,13 @@
             });
             return false;
         }
+        function confirmDenyOffer(event, formId) {
+            event.preventDefault();
+            showConfirm('Are you sure you want to deny this offer? This will decline the offer and terminate the deal negotiation.', function () {
+                document.getElementById(formId).submit();
+            });
+            return false;
+        }
         function confirmVerifyKey(event, formId) {
             event.preventDefault();
             showConfirm('Verify the completion key and mark this deal as completed? This action cannot be undone.', function () {

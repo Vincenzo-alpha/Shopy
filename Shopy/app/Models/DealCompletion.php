@@ -11,6 +11,7 @@ class DealCompletion extends Model
 
     protected $fillable = [
         'deal_id_fk',
+        'completion_key',
         'completion_key_hash',
         'completion_status',
         'completed_at',

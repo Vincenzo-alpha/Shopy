@@ -25,6 +25,7 @@ class DealTransferService
         DealCompletion::updateOrCreate(
             ['deal_id_fk' => $dealId],
             [
+                'completion_key' => $plainKey,
                 'completion_key_hash' => $hash,
                 'completion_status' => 'pending',
                 'completed_at' => null,

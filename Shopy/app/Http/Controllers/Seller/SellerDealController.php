@@ -207,6 +207,44 @@ class SellerDealController
         return back()->with('success', 'Customer offer accepted! Awaiting customer payment of ₹' . number_format($agreedAmount, 2));
     }
 
+    public function denyOffer(Request $request, $id)
+    {
+        $seller = Auth::guard('seller')->user();
+        $deal = DealArchive::with(['product', 'negotiation'])
+            ->where('deal_id_pk', $id)
+            ->where('seller_id_fk', $seller->seller_id_pk)
+            ->firstOrFail();
+
+        if ($deal->deal_status !== 'negotiating') {
+            return back()->with('error', 'Deal is no longer in negotiation state.');
+        }
+
+        $reason = $request->input('reason');
+        $noteText = 'Seller denied the offer.' . ($reason ? ' Reason: ' . $reason : '');
+
+        DB::transaction(function () use ($deal, $noteText) {
+            $deal->update([
+                'deal_status' => 'cancelled',
+            ]);
+
+            if ($deal->negotiation) {
+                $deal->negotiation->update([
+                    'negotiation_status' => 'rejected',
+                ]);
+
+                NegotiationHistory::create([
+                    'neg_id_fk' => $deal->negotiation->neg_id_pk,
+                    'offered_by' => 'seller',
+                    'amount' => (float) ($deal->negotiation->customer_negotiation_amt ?? 0),
+                    'notes' => $noteText,
+                ]);
+            }
+        });
+
+        return redirect()->route('seller.deals.show', $deal->deal_id_pk)
+            ->with('info', 'Offer has been denied. Deal negotiation has been terminated.');
+    }
+
     public function verifyCompletionKey(Request $request, $id)
     {
         $seller = Auth::guard('seller')->user();

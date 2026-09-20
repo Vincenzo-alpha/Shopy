@@ -67,6 +67,7 @@ Route::prefix('customer')->name('customer.')->middleware('auth.customer')->group
     Route::get('/deals/{id}', [CustomerDealController::class, 'show'])->name('deals.show');
     Route::post('/deals/{id}/counter-offer', [CustomerDealController::class, 'counterOffer'])->name('deals.counter');
     Route::post('/deals/{id}/accept-offer', [CustomerDealController::class, 'acceptOffer'])->name('deals.accept');
+    Route::post('/deals/{id}/deny-offer', [CustomerDealController::class, 'denyOffer'])->name('deals.deny');
 
     // Sandbox Payment
     Route::get('/deals/{id}/payment', [CustomerDealController::class, 'paymentScreen'])->name('deals.payment');
@@ -105,6 +106,7 @@ Route::prefix('seller')->name('seller.')->middleware('auth.seller')->group(funct
     Route::get('/deals/{id}', [SellerDealController::class, 'showDeal'])->name('deals.show');
     Route::post('/deals/{id}/counter-offer', [SellerDealController::class, 'counterOffer'])->name('deals.counter');
     Route::post('/deals/{id}/accept-offer', [SellerDealController::class, 'acceptOffer'])->name('deals.accept');
+    Route::post('/deals/{id}/deny-offer', [SellerDealController::class, 'denyOffer'])->name('deals.deny');
     
     // Completion Key Verification
     Route::post('/deals/{id}/verify-completion', [SellerDealController::class, 'verifyCompletionKey'])->name('deals.verify');

@@ -14,7 +14,9 @@
             <span class="text-muted small">Initiated on {{ $deal->created_at->format('M d, Y h:i A') }}</span>
         </div>
         <div>
-            @if($deal->payment_status === 'paid')
+            @if($deal->deal_status === 'cancelled')
+                <span class="badge bg-danger px-3 py-2 fs-6"><i class="bi bi-x-circle me-1"></i> Offer Denied / Cancelled</span>
+            @elseif($deal->payment_status === 'paid')
                 <span class="badge bg-success px-3 py-2 fs-6"><i class="bi bi-check2-circle me-1"></i> Payment Verified</span>
             @elseif($deal->deal_status === 'payment_pending')
                 <span class="badge bg-warning text-dark px-3 py-2 fs-6"><i class="bi bi-hourglass-split me-1"></i> Payment Pending</span>
@@ -26,30 +28,45 @@
 </div>
 
 <!-- Deal Lifecycle Progression -->
-<div class="card border-0 shadow-sm mb-4 p-3 bg-white">
-    <div class="row text-center g-2">
-        <div class="col-3">
-            <div class="p-2 rounded {{ $deal->deal_status === 'negotiating' ? 'bg-primary text-white fw-bold' : 'bg-light text-muted' }}">
-                1. Negotiation
+@if($deal->deal_status === 'cancelled')
+    <div class="card border-0 shadow-sm mb-4 p-3 bg-danger-subtle text-danger border-start border-danger border-4">
+        <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+            <div class="d-flex align-items-center gap-2">
+                <i class="bi bi-x-circle-fill fs-4"></i>
+                <div>
+                    <strong class="fs-6 text-danger">Offer Denied & Deal Terminated</strong>
+                    <div class="small text-muted">The negotiation for this deal has ended because the offer was denied.</div>
+                </div>
             </div>
+            <span class="badge bg-danger fs-6 px-3 py-2">Cancelled</span>
         </div>
-        <div class="col-3">
-            <div class="p-2 rounded {{ $deal->deal_status === 'payment_pending' ? 'bg-primary text-white fw-bold' : ($deal->payment_status === 'paid' ? 'bg-success-subtle text-success fw-semibold' : 'bg-light text-muted') }}">
-                2. Customer Payment
+    </div>
+@else
+    <div class="card border-0 shadow-sm mb-4 p-3 bg-white">
+        <div class="row text-center g-2">
+            <div class="col-3">
+                <div class="p-2 rounded {{ $deal->deal_status === 'negotiating' ? 'bg-primary text-white fw-bold' : 'bg-light text-muted' }}">
+                    1. Negotiation
+                </div>
             </div>
-        </div>
-        <div class="col-3">
-            <div class="p-2 rounded {{ $deal->deal_status === 'in_fulfillment' ? 'bg-primary text-white fw-bold' : 'bg-light text-muted' }}">
-                3. Key Verification
+            <div class="col-3">
+                <div class="p-2 rounded {{ $deal->deal_status === 'payment_pending' ? 'bg-primary text-white fw-bold' : ($deal->payment_status === 'paid' ? 'bg-success-subtle text-success fw-semibold' : 'bg-light text-muted') }}">
+                    2. Customer Payment
+                </div>
             </div>
-        </div>
-        <div class="col-3">
-            <div class="p-2 rounded bg-light text-muted">
-                4. Completed
+            <div class="col-3">
+                <div class="p-2 rounded {{ $deal->deal_status === 'in_fulfillment' ? 'bg-primary text-white fw-bold' : 'bg-light text-muted' }}">
+                    3. Key Verification
+                </div>
+            </div>
+            <div class="col-3">
+                <div class="p-2 rounded bg-light text-muted">
+                    4. Completed
+                </div>
             </div>
         </div>
     </div>
-</div>
+@endif
 
 <!-- KEY VERIFICATION SECTION (When deal is paid and in fulfillment) -->
 @if($deal->deal_status === 'in_fulfillment' && $deal->payment_status === 'paid')
@@ -236,12 +253,12 @@
                         </div>
                     </div>
 
-                    <!-- Accept Buyer Counteroffer -->
+                    <!-- Accept or Deny Buyer Counteroffer -->
                     <div class="col-md-5">
                         <div class="card p-3 bg-light border-0 h-100 d-flex flex-column justify-content-between">
                             <div>
-                                <h6 class="fw-bold mb-1">Accept Buyer's Price</h6>
-                                <p class="small text-muted mb-3">Accept the buyer's proposal of <strong>₹{{ number_format($deal->negotiation->customer_negotiation_amt, 2) }}</strong>.</p>
+                                <h6 class="fw-bold mb-1">Deal Decision</h6>
+                                <p class="small text-muted mb-3">Accept the buyer's proposal of <strong>₹{{ number_format($deal->negotiation->customer_negotiation_amt, 2) }}</strong> or deny this offer.</p>
                                 
                                 @if($feePreview)
                                     <div class="p-2 bg-white rounded border small mb-3">
@@ -261,13 +278,32 @@
                                 @endif
                             </div>
 
-                            <form id="acceptOfferSellerForm" action="{{ route('seller.deals.accept', $deal->deal_id_pk) }}" method="POST">
-                                @csrf
-                                <button type="button" class="btn btn-success w-100 py-2 fw-bold shadow-sm"
-                                        onclick="confirmAcceptOffer(event, 'acceptOfferSellerForm', '{{ number_format($deal->negotiation->customer_negotiation_amt, 2) }}')">
-                                    <i class="bi bi-check2-circle me-1"></i> Accept Offer (₹{{ number_format($deal->negotiation->customer_negotiation_amt, 2) }})
+                            <div class="d-flex flex-column gap-2">
+                                <form id="acceptOfferSellerForm" action="{{ route('seller.deals.accept', $deal->deal_id_pk) }}" method="POST">
+                                    @csrf
+                                    <button type="button" class="btn btn-success w-100 py-2 fw-bold shadow-sm"
+                                            onclick="confirmAcceptOffer(event, 'acceptOfferSellerForm', '{{ number_format($deal->negotiation->customer_negotiation_amt, 2) }}')">
+                                        <i class="bi bi-check2-circle me-1"></i> Accept Offer (₹{{ number_format($deal->negotiation->customer_negotiation_amt, 2) }})
+                                    </button>
+                                </form>
+
+                                <button type="button" class="btn btn-outline-danger w-100 py-2 fw-bold" data-bs-toggle="collapse" data-bs-target="#denyOfferSellerCollapse" aria-expanded="false">
+                                    <i class="bi bi-x-circle me-1"></i> Deny Offer
                                 </button>
-                            </form>
+
+                                <div class="collapse mt-2" id="denyOfferSellerCollapse">
+                                    <div class="p-3 bg-white rounded border border-danger-subtle">
+                                        <form id="denyOfferSellerForm" action="{{ route('seller.deals.deny', $deal->deal_id_pk) }}" method="POST">
+                                            @csrf
+                                            <label class="form-label small fw-semibold text-danger">Deny Offer Confirmation</label>
+                                            <input type="text" name="reason" class="form-control form-control-sm mb-2" placeholder="Optional reason (e.g. Price too low)">
+                                            <button type="button" class="btn btn-danger btn-sm w-100 fw-bold" onclick="confirmDenyOffer(event, 'denyOfferSellerForm')">
+                                                <i class="bi bi-x-circle me-1"></i> Confirm Deny Offer
+                                            </button>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -279,6 +315,19 @@
                 </div>
                 <h5 class="fw-bold">Agreed Amount: ₹{{ number_format($deal->agreed_amount, 2) }}</h5>
                 <p class="text-muted small">Offer accepted! Waiting for customer to complete sandbox payment. Once paid, the customer will receive a completion key.</p>
+            </div>
+        @elseif($deal->deal_status === 'cancelled')
+            <div class="card border-0 shadow-sm p-4 mb-4 text-center">
+                <div class="rounded-circle bg-danger-subtle text-danger d-inline-flex align-items-center justify-content-center p-3 mb-3 mx-auto" style="width: 64px; height: 64px;">
+                    <i class="bi bi-x-circle fs-2"></i>
+                </div>
+                <h4 class="fw-bold text-danger">Offer Denied & Negotiation Closed</h4>
+                <p class="text-muted small">This deal negotiation has been terminated because the offer was denied. No further counteroffers or fulfillment can proceed.</p>
+                <div class="d-flex justify-content-center gap-2 mt-2">
+                    <a href="{{ route('seller.deals.index') }}" class="btn btn-primary px-4 fw-bold shadow-sm">
+                        <i class="bi bi-arrow-left me-1"></i> Back to Deals List
+                    </a>
+                </div>
             </div>
         @else
             <div class="card border-0 shadow-sm p-4 mb-4">
