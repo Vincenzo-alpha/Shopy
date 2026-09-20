@@ -153,7 +153,6 @@
             color: var(--primary);
             font-weight: 600;
         }
-    </style>
         /* --- Global Alert Modal Styles --- */
         .modal .gradient-top {
             height: 6px;
