@@ -154,6 +154,36 @@
             font-weight: 600;
         }
     </style>
+        /* --- Global Alert Modal Styles --- */
+        .modal .gradient-top {
+            height: 6px;
+            border-radius: 0.5rem 0.5rem 0 0;
+        }
+        .modal .gradient-success { background: linear-gradient(90deg, #10b981, #059669); }
+        .modal .gradient-danger  { background: linear-gradient(90deg, #ef4444, #dc2626); }
+        .modal .gradient-warning { background: linear-gradient(90deg, #f59e0b, #d97706); }
+        .modal .gradient-info    { background: linear-gradient(90deg, #3b82f6, #2563eb); }
+        .modal .icon-wrapper {
+            width: 64px; height: 64px;
+            border-radius: 50%;
+            display: inline-flex; align-items: center; justify-content: center;
+            font-size: 1.75rem;
+        }
+        .modal .icon-success { background: #d1fae5; color: #059669; }
+        .modal .icon-danger  { background: #fee2e2; color: #dc2626; }
+        .modal .icon-warning { background: #fef3c7; color: #d97706; }
+        .modal .icon-info    { background: #dbeafe; color: #2563eb; }
+        /* --- Validation Feedback --- */
+        .invalid-feedback { display: block; }
+        .form-control.is-invalid, .form-select.is-invalid {
+            border-color: #ef4444;
+            box-shadow: 0 0 0 0.2rem rgba(239,68,68,.15);
+        }
+        .form-control.is-valid, .form-select.is-valid {
+            border-color: #10b981;
+            box-shadow: 0 0 0 0.2rem rgba(16,185,129,.10);
+        }
+    </style>
     @yield('styles')
 </head>
 <body>
@@ -251,48 +281,14 @@
         </div>
     </nav>
 
-    <!-- Global Alerts -->
-    <div class="container mt-3">
-        @if(session('success'))
-            <div class="alert alert-success alert-dismissible fade show border-0 shadow-sm" role="alert">
-                <i class="bi bi-check-circle-fill me-2"></i> {{ session('success') }}
-                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-            </div>
-        @endif
-
-        @if(session('error'))
-            <div class="alert alert-danger alert-dismissible fade show border-0 shadow-sm" role="alert">
-                <i class="bi bi-exclamation-triangle-fill me-2"></i> {{ session('error') }}
-                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-            </div>
-        @endif
-
-        @if(session('warning'))
-            <div class="alert alert-warning alert-dismissible fade show border-0 shadow-sm" role="alert">
-                <i class="bi bi-exclamation-circle-fill me-2"></i> {{ session('warning') }}
-                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-            </div>
-        @endif
-
-        @if(session('info'))
-            <div class="alert alert-info alert-dismissible fade show border-0 shadow-sm" role="alert">
-                <i class="bi bi-info-circle-fill me-2"></i> {{ session('info') }}
-                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-            </div>
-        @endif
-
-        @if($errors->any())
-            <div class="alert alert-danger alert-dismissible fade show border-0 shadow-sm" role="alert">
-                <div class="fw-bold mb-1"><i class="bi bi-x-circle me-1"></i> Please correct the following errors:</div>
-                <ul class="mb-0 ps-3">
-                    @foreach($errors->all() as $error)
-                        <li>{{ $error }}</li>
-                    @endforeach
-                </ul>
-                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-            </div>
-        @endif
-    </div>
+    <!-- session data rendered as JS vars for modal trigger -->
+    @php
+        $flashSuccess = session('success');
+        $flashError   = session('error');
+        $flashWarning = session('warning');
+        $flashInfo    = session('info');
+        $flashErrors  = $errors->any() ? $errors->all() : [];
+    @endphp
 
     <!-- Main Content Area -->
     <main class="flex-grow-1">
@@ -326,24 +322,175 @@
     <!-- Bootstrap 5 JS & jQuery -->
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-    
+    <script src="{{ asset('js/app.js') }}"></script>
+
+    <!-- Global Alert Modal -->
+    <div class="modal fade" id="globalAlertModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-sm">
+            <div class="modal-content border-0 shadow-lg" style="border-radius:1rem;overflow:hidden;">
+                <div id="globalAlertGradient" class="gradient-top"></div>
+                <div class="modal-body text-center p-4">
+                    <div id="globalAlertIconWrap" class="icon-wrapper mb-3 mx-auto">
+                        <i id="globalAlertIcon" class="bi"></i>
+                    </div>
+                    <h6 id="globalAlertType" class="fw-bold mb-2"></h6>
+                    <p id="globalAlertMessage" class="text-muted small mb-0"></p>
+                    <ul id="globalAlertList" class="small ps-3 d-none text-start mt-2 mb-0"></ul>
+                    <div class="mt-3">
+                        <button type="button" class="btn btn-primary btn-sm px-4" data-bs-dismiss="modal">OK</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Confirm Modal -->
+    <div class="modal fade" id="confirmModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg" style="border-radius:1rem;overflow:hidden;">
+                <div class="gradient-top gradient-warning"></div>
+                <div class="modal-body text-center p-4">
+                    <div class="icon-wrapper icon-warning mb-3 mx-auto">
+                        <i class="bi bi-question-circle-fill"></i>
+                    </div>
+                    <h6 class="fw-bold mb-2">Confirmation</h6>
+                    <p id="confirmMessage" class="text-muted small">Do you want to proceed?</p>
+                    <div class="d-flex gap-2 justify-content-center mt-3">
+                        <button type="button" class="btn btn-outline-secondary btn-sm px-3" data-bs-dismiss="modal">Cancel</button>
+                        <button type="button" class="btn btn-warning btn-sm px-3 fw-bold" id="confirmContinue">Confirm</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script>
-        // Setup CSRF header for all jQuery AJAX requests
+        // ── Setup CSRF for AJAX ──
         $.ajaxSetup({
-            headers: {
-                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
-            }
+            headers: { 'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content') }
         });
 
-        // Utility debounce function for smooth performance
         function debounce(func, wait) {
             let timeout;
             return function (...args) {
-                const context = this;
                 clearTimeout(timeout);
-                timeout = setTimeout(() => func.apply(context, args), wait);
+                timeout = setTimeout(() => func.apply(this, args), wait);
             };
         }
+
+        // ── Global Alert Modal ──
+        function showAlert(type, message, listItems) {
+            const configs = {
+                success: { gradient: 'gradient-success', icon: 'bi-check-circle-fill', iconClass: 'icon-success', label: 'Success' },
+                error:   { gradient: 'gradient-danger',  icon: 'bi-x-circle-fill',     iconClass: 'icon-danger',  label: 'Error' },
+                danger:  { gradient: 'gradient-danger',  icon: 'bi-x-circle-fill',     iconClass: 'icon-danger',  label: 'Error' },
+                warning: { gradient: 'gradient-warning', icon: 'bi-exclamation-triangle-fill', iconClass: 'icon-warning', label: 'Warning' },
+                info:    { gradient: 'gradient-info',    icon: 'bi-info-circle-fill',  iconClass: 'icon-info',    label: 'Info' },
+            };
+            const cfg = configs[type] || configs.info;
+
+            $('#globalAlertGradient').attr('class', 'gradient-top ' + cfg.gradient);
+            $('#globalAlertIcon').attr('class', 'bi ' + cfg.icon);
+            $('#globalAlertIconWrap').attr('class', 'icon-wrapper mb-3 mx-auto ' + cfg.iconClass);
+            $('#globalAlertType').text(cfg.label);
+            $('#globalAlertMessage').text(message || '');
+
+            const $list = $('#globalAlertList').empty();
+            if (listItems && listItems.length) {
+                listItems.forEach(item => $list.append(`<li>${item}</li>`));
+                $list.removeClass('d-none');
+            } else {
+                $list.addClass('d-none');
+            }
+
+            new bootstrap.Modal(document.getElementById('globalAlertModal')).show();
+        }
+
+        // ── Confirm Modal ──
+        let confirmCallback = null;
+        function showConfirm(message, callback) {
+            document.getElementById('confirmMessage').innerText = message;
+            confirmCallback = callback;
+            new bootstrap.Modal(document.getElementById('confirmModal')).show();
+        }
+        document.getElementById('confirmContinue').addEventListener('click', function () {
+            if (confirmCallback) confirmCallback();
+            bootstrap.Modal.getInstance(document.getElementById('confirmModal')).hide();
+        });
+
+        // ── Named confirm helpers ──
+        function confirmFormSubmit(event, formId, message) {
+            event.preventDefault();
+            showConfirm(message, function () {
+                document.getElementById(formId).submit();
+            });
+            return false;
+        }
+        function confirmLink(event, link, message) {
+            event.preventDefault();
+            showConfirm(message || 'Do you want to proceed?', function () {
+                window.location.href = link.href;
+            });
+            return false;
+        }
+        function confirmAcceptOffer(event, formId, amount) {
+            event.preventDefault();
+            showConfirm(`Accept this offer of ₹${amount} and proceed to payment?`, function () {
+                document.getElementById(formId).submit();
+            });
+            return false;
+        }
+        function confirmVerifyKey(event, formId) {
+            event.preventDefault();
+            showConfirm('Verify the completion key and mark this deal as completed? This action cannot be undone.', function () {
+                document.getElementById(formId).submit();
+            });
+            return false;
+        }
+        function confirmToggleAvailability(event, formId, currentStatus) {
+            event.preventDefault();
+            const newStatus = currentStatus === 'available' ? 'unavailable' : 'available';
+            showConfirm(`Change listing status to "${newStatus}"?`, function () {
+                document.getElementById(formId).submit();
+            });
+            return false;
+        }
+        function confirmLogout(event, formId) {
+            event.preventDefault();
+            showConfirm('Are you sure you want to logout?', function () {
+                document.getElementById(formId).submit();
+            });
+            return false;
+        }
+        function confirmInitiateDeal(event, formId) {
+            event.preventDefault();
+            showConfirm('Initiate a deal with this customer? A live negotiation will be opened.', function () {
+                document.getElementById(formId).submit();
+            });
+            return false;
+        }
+
+        // ── Auto-fire modal from session flash ──
+        @php
+            $flashSuccess = session('success');
+            $flashError   = session('error');
+            $flashWarning = session('warning');
+            $flashInfo    = session('info');
+            $flashErrors  = $errors->any() ? $errors->all() : [];
+        @endphp
+        document.addEventListener('DOMContentLoaded', function () {
+            @if($flashSuccess)
+                showAlert('success', @json($flashSuccess));
+            @elseif(!empty($flashErrors))
+                showAlert('error', 'Please correct the following errors:', @json($flashErrors));
+            @elseif($flashError)
+                showAlert('error', @json($flashError));
+            @elseif($flashWarning)
+                showAlert('warning', @json($flashWarning));
+            @elseif($flashInfo)
+                showAlert('info', @json($flashInfo));
+            @endif
+        });
     </script>
     @yield('scripts')
 </body>

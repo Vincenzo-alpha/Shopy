@@ -76,3 +76,63 @@
     </div>
 </div>
 @endsection
+
+@section('scripts')
+<script>
+var validationRules = {
+    customer_name: {
+        required: true,
+        textType: 'textWithSpecial',
+        minLength: 3,
+        maxLength: 150,
+        message: 'Full name is required (min 3 characters).',
+    },
+    email: {
+        required: true,
+        pattern: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+        message: 'Please enter a valid email address.',
+    },
+    contact_no: {
+        required: true,
+        minLength: 7,
+        maxLength: 20,
+        pattern: /^[\+0-9\s\-\(\)]{7,20}$/,
+        message: 'Enter a valid contact number.',
+    },
+    password: {
+        required: true,
+        minLength: 6,
+        maxLength: 100,
+        notAllowSpace: true,
+        message: 'Password must be at least 6 characters.',
+    },
+    password_confirmation: {
+        required: true,
+        minLength: 6,
+        notAllowSpace: true,
+        message: 'Please confirm your password.',
+    },
+    address: {
+        required: true,
+        minLength: 10,
+        maxLength: 500,
+        message: 'Address must be at least 10 characters.',
+    },
+    city: {
+        required: true,
+        minLength: 2,
+        maxLength: 100,
+        message: 'City is required.',
+    },
+    state: {
+        required: true,
+        minLength: 2,
+        maxLength: 100,
+        message: 'State is required.',
+    },
+};
+setupFormValidation('form', function () {
+    return validatePasswordMatch('password', 'password_confirmation');
+});
+</script>
+@endsection

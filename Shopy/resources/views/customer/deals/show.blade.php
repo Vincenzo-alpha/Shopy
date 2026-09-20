@@ -222,23 +222,22 @@
                                     <h6 class="fw-bold mb-1">Accept Seller's Price</h6>
                                     <p class="small text-muted mb-3">Accept the seller's current price of <strong>₹{{ number_format($deal->negotiation->seller_negotiation_amt, 2) }}</strong> and proceed to payment.</p>
                                     
-                                    @if($feePreview)
+                                    @if($feePreview && $deal->deal_status === 'negotiating')
                                         <div class="p-2 bg-white rounded border small mb-3">
                                             <div class="d-flex justify-content-between">
                                                 <span>You Pay:</span>
                                                 <strong class="text-primary">₹{{ number_format($feePreview['agreed_amount'], 2) }}</strong>
                                             </div>
-                                            <div class="d-flex justify-content-between text-muted" style="font-size: 0.75rem;">
-                                                <span>Seller platform fee ({{ $feePreview['fee_percent'] }}%):</span>
-                                                <span>₹{{ number_format($feePreview['platform_fee'], 2) }}</span>
-                                            </div>
+                                            {{-- Platform fee is an internal seller detail; not shown to customer --}}
                                         </div>
                                     @endif
                                 </div>
 
-                                <form action="{{ route('customer.deals.accept', $deal->deal_id_pk) }}" method="POST" onsubmit="return confirm('Accept this offer of ₹{{ number_format($deal->negotiation->seller_negotiation_amt, 2) }} and move to payment?');">
+                                <form id="acceptOfferForm" action="{{ route('customer.deals.accept', $deal->deal_id_pk) }}" method="POST">
                                     @csrf
-                                    <button type="submit" class="btn btn-success w-100 py-2 fw-bold shadow-sm">
+                                    <button type="button"
+                                            class="btn btn-success w-100 py-2 fw-bold shadow-sm"
+                                            onclick="confirmAcceptOffer(event, 'acceptOfferForm', '{{ number_format($deal->negotiation->seller_negotiation_amt, 2) }}')">
                                         <i class="bi bi-check2-circle me-1"></i> Accept Offer (₹{{ number_format($deal->negotiation->seller_negotiation_amt, 2) }})
                                     </button>
                                 </form>
@@ -311,4 +310,23 @@
         </div>
     </div>
 </div>
+@endsection
+
+@section('scripts')
+<script>
+var validationRules = {
+    offer_amount: {
+        required: true,
+        pattern: /^[0-9]+(\.?[0-9]{0,2})?$/,
+        min: {{ $deal->product->minimum_rate }},
+        max: {{ $deal->product->maximum_rate }},
+        message: 'Please enter a valid offer amount between ₹{{ number_format($deal->product->minimum_rate, 2) }} and ₹{{ number_format($deal->product->maximum_rate, 2) }}.',
+    },
+    notes: {
+        required: false,
+        maxLength: 255,
+    },
+};
+setupFormValidation('form[action*="counter"]');
+</script>
 @endsection

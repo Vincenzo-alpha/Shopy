@@ -76,3 +76,57 @@
     </div>
 </div>
 @endsection
+
+@section('scripts')
+<script>
+var validationRules = {
+    prod_service_name: {
+        required: true,
+        textType: 'textWithSpecial',
+        minLength: 5,
+        maxLength: 200,
+        message: 'Item/service title is required (min 5 characters).',
+    },
+    category: {
+        required: true,
+        minLength: 2,
+        maxLength: 100,
+        message: 'Category is required.',
+    },
+    item_type: {
+        required: true,
+        message: 'Please select a listing type.',
+    },
+    listed_price: {
+        required: true,
+        pattern: /^[0-9]+(\.?[0-9]{0,2})?$/,
+        message: 'Enter a valid catalog price (e.g. 1500 or 1500.00).',
+    },
+    minimum_rate: {
+        required: true,
+        pattern: /^[0-9]+(\.?[0-9]{0,2})?$/,
+        message: 'Enter a valid minimum rate.',
+    },
+    maximum_rate: {
+        required: true,
+        pattern: /^[0-9]+(\.?[0-9]{0,2})?$/,
+        message: 'Enter a valid maximum rate.',
+    },
+    description: {
+        required: false,
+        maxLength: 2000,
+    },
+};
+setupFormValidation('form', function () {
+    const min = parseFloat($('[name="minimum_rate"]').val()) || 0;
+    const max = parseFloat($('[name="maximum_rate"]').val()) || 0;
+    if (min > max && max > 0) {
+        const $min = $('[name="minimum_rate"]');
+        $min.next('.invalid-feedback').remove();
+        $min.addClass('is-invalid').after('<div class="invalid-feedback">Minimum rate must be ≤ maximum rate.</div>');
+        return false;
+    }
+    return true;
+});
+</script>
+@endsection

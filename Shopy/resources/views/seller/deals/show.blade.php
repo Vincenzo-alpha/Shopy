@@ -64,7 +64,7 @@
                     </p>
                 </div>
                 <div class="col-md-5 mt-3 mt-md-0">
-                    <form action="{{ route('seller.deals.verify', $deal->deal_id_pk) }}" method="POST" class="p-3 bg-white rounded border shadow-sm" onsubmit="return confirm('Confirm deal completion with this key?');">
+                    <form id="verifyKeyForm" action="{{ route('seller.deals.verify', $deal->deal_id_pk) }}" method="POST" class="p-3 bg-white rounded border shadow-sm">
                         @csrf
                         <label class="form-label fw-bold small">Enter Customer's Completion Key</label>
                         <div class="input-group mb-2">
@@ -75,7 +75,8 @@
                                    placeholder="e.g. SHP-AB12CD" 
                                    required autofocus>
                         </div>
-                        <button type="submit" class="btn btn-success w-100 fw-bold">
+                        <button type="button" class="btn btn-success w-100 fw-bold"
+                                onclick="confirmVerifyKey(event, 'verifyKeyForm')">
                             <i class="bi bi-check-circle-fill me-1"></i> Verify Key & Complete Deal
                         </button>
                     </form>
@@ -260,9 +261,10 @@
                                 @endif
                             </div>
 
-                            <form action="{{ route('seller.deals.accept', $deal->deal_id_pk) }}" method="POST" onsubmit="return confirm('Accept this offer of ₹{{ number_format($deal->negotiation->customer_negotiation_amt, 2) }}?');">
+                            <form id="acceptOfferSellerForm" action="{{ route('seller.deals.accept', $deal->deal_id_pk) }}" method="POST">
                                 @csrf
-                                <button type="submit" class="btn btn-success w-100 py-2 fw-bold shadow-sm">
+                                <button type="button" class="btn btn-success w-100 py-2 fw-bold shadow-sm"
+                                        onclick="confirmAcceptOffer(event, 'acceptOfferSellerForm', '{{ number_format($deal->negotiation->customer_negotiation_amt, 2) }}')">
                                     <i class="bi bi-check2-circle me-1"></i> Accept Offer (₹{{ number_format($deal->negotiation->customer_negotiation_amt, 2) }})
                                 </button>
                             </form>

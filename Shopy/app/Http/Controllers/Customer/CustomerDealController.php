@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Customer;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Customer\CounterOfferRequest;
 use App\Models\DealArchive;
 use App\Models\DealMaster;
 use App\Models\Negotiation;
@@ -50,7 +51,7 @@ class CustomerDealController
         return view('customer.deals.show', compact('deal', 'feePreview'));
     }
 
-    public function counterOffer(Request $request, $id)
+    public function counterOffer(CounterOfferRequest $request, $id)
     {
         $customer = Auth::guard('customer')->user();
         $deal = DealArchive::with(['product', 'negotiation'])
@@ -61,17 +62,6 @@ class CustomerDealController
         if ($deal->deal_status !== 'negotiating') {
             return back()->with('error', 'Negotiation is locked for this deal.');
         }
-
-        $min = (float) $deal->product->minimum_rate;
-        $max = (float) $deal->product->maximum_rate;
-
-        $request->validate([
-            'offer_amount' => "required|numeric|min:{$min}|max:{$max}",
-            'notes' => 'nullable|string|max:255',
-        ], [
-            'offer_amount.min' => "Offer must be at least ₹{$min} (Seller minimum acceptable rate).",
-            'offer_amount.max' => "Offer cannot exceed ₹{$max} (Seller maximum rate).",
-        ]);
 
         $amount = round((float) $request->offer_amount, 2);
 

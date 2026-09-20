@@ -3,6 +3,8 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Auth\CustomerLoginRequest;
+use App\Http\Requests\Auth\CustomerRegisterRequest;
 use App\Models\Customer;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -27,17 +29,9 @@ class CustomerAuthController extends Controller
         return view('auth.customer-register');
     }
 
-    public function register(Request $request)
+    public function register(CustomerRegisterRequest $request)
     {
-        $validated = $request->validate([
-            'customer_name' => 'required|string|max:150',
-            'email' => 'required|email|max:150|unique:sk_customer_master,email',
-            'contact_no' => 'required|string|max:20',
-            'password' => 'required|string|min:6|confirmed',
-            'address' => 'required|string|max:500',
-            'city' => 'required|string|max:100',
-            'state' => 'required|string|max:100',
-        ]);
+        $validated = $request->validated();
 
         $uniqueNo = 'CUS-' . date('Ymd') . '-' . strtoupper(Str::random(4));
 
@@ -59,12 +53,9 @@ class CustomerAuthController extends Controller
         return redirect()->route('customer.dashboard')->with('success', 'Account registered successfully! Welcome to Shopy.');
     }
 
-    public function login(Request $request)
+    public function login(CustomerLoginRequest $request)
     {
-        $credentials = $request->validate([
-            'email' => 'required|email',
-            'password' => 'required|string',
-        ]);
+        $credentials = $request->only(['email', 'password']);
 
         if (Auth::guard('customer')->attempt($credentials, $request->boolean('remember'))) {
             $customer = Auth::guard('customer')->user();

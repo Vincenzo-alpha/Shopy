@@ -3,6 +3,8 @@
 namespace App\Http\Controllers\Seller;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Seller\StoreProductRequest;
+use App\Http\Requests\Seller\UpdateProductRequest;
 use App\Models\ProductService;
 use App\Models\SellerCity;
 use Illuminate\Http\Request;
@@ -27,23 +29,10 @@ class ProductServiceController
         return view('seller.products.create');
     }
 
-    public function store(Request $request)
+    public function store(StoreProductRequest $request)
     {
         $seller = Auth::guard('seller')->user();
-
-        $validated = $request->validate([
-            'prod_service_name' => 'required|string|max:200',
-            'category' => 'required|string|max:100',
-            'item_type' => 'required|in:product,service',
-            'listed_price' => 'required|numeric|min:1',
-            'minimum_rate' => 'required|numeric|min:1|lte:maximum_rate',
-            'maximum_rate' => 'required|numeric|min:1|gte:minimum_rate',
-            'description' => 'nullable|string|max:2000',
-            'image' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:3072',
-        ], [
-            'minimum_rate.lte' => 'The minimum rate must be less than or equal to the maximum rate.',
-            'maximum_rate.gte' => 'The maximum rate must be greater than or equal to the minimum rate.',
-        ]);
+        $validated = $request->validated();
 
         $imagePath = null;
         if ($request->hasFile('image')) {
@@ -80,24 +69,14 @@ class ProductServiceController
         return view('seller.products.edit', compact('product'));
     }
 
-    public function update(Request $request, $id)
+    public function update(UpdateProductRequest $request, $id)
     {
         $seller = Auth::guard('seller')->user();
         $product = ProductService::where('prod_service_id_pk', $id)
             ->where('seller_id_fk', $seller->seller_id_pk)
             ->firstOrFail();
 
-        $validated = $request->validate([
-            'prod_service_name' => 'required|string|max:200',
-            'category' => 'required|string|max:100',
-            'item_type' => 'required|in:product,service',
-            'listed_price' => 'required|numeric|min:1',
-            'minimum_rate' => 'required|numeric|min:1|lte:maximum_rate',
-            'maximum_rate' => 'required|numeric|min:1|gte:minimum_rate',
-            'description' => 'nullable|string|max:2000',
-            'image' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:3072',
-            'availability_status' => 'required|in:available,unavailable,deactivated',
-        ]);
+        $validated = $request->validated();
 
         if ($request->hasFile('image')) {
             if ($product->image_path && Storage::disk('public')->exists($product->image_path)) {

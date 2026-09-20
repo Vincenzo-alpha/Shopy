@@ -3,6 +3,8 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Auth\SellerLoginRequest;
+use App\Http\Requests\Auth\SellerRegisterRequest;
 use App\Models\Seller;
 use App\Models\SellerCity;
 use App\Models\SellerWallet;
@@ -30,18 +32,9 @@ class SellerAuthController extends Controller
         return view('auth.seller-register');
     }
 
-    public function register(Request $request)
+    public function register(SellerRegisterRequest $request)
     {
-        $validated = $request->validate([
-            'seller_name' => 'required|string|max:150',
-            'email' => 'required|email|max:150|unique:sk_seller_master,email',
-            'contact_no' => 'required|string|max:20',
-            'password' => 'required|string|min:6|confirmed',
-            'address' => 'required|string|max:500',
-            'city' => 'required|string|max:100',
-            'state' => 'required|string|max:100',
-            'service_cities' => 'nullable|string|max:500', // comma-separated cities
-        ]);
+        $validated = $request->validated();
 
         DB::transaction(function () use ($validated, &$seller) {
             $uniqueNo = 'SEL-' . date('Ymd') . '-' . strtoupper(Str::random(4));
@@ -94,12 +87,9 @@ class SellerAuthController extends Controller
         return redirect()->route('seller.dashboard')->with('success', 'Seller account created successfully! Welcome to Shopy.');
     }
 
-    public function login(Request $request)
+    public function login(SellerLoginRequest $request)
     {
-        $credentials = $request->validate([
-            'email' => 'required|email',
-            'password' => 'required|string',
-        ]);
+        $credentials = $request->only(['email', 'password']);
 
         if (Auth::guard('seller')->attempt($credentials, $request->boolean('remember'))) {
             $seller = Auth::guard('seller')->user();
