@@ -267,11 +267,15 @@
                     @else
                         <!-- Guest Auth Links -->
                         <li class="nav-item">
-                            <a class="nav-link fw-semibold" href="{{ route('customer.login') }}">Customer Sign In</a>
+                            <a class="btn btn-sm btn-primary fw-semibold text-white d-inline-flex align-items-center gap-1 shadow-sm px-3" href="{{ route('customer.login') }}">
+                                <i class="bi bi-person-fill"></i>
+                                <span>Customer Login</span>
+                            </a>
                         </li>
                         <li class="nav-item">
-                            <a class="btn btn-sm btn-outline-primary fw-semibold" href="{{ route('seller.login') }}">
-                                <i class="bi bi-shop-window me-1"></i> Seller Portal
+                            <a class="btn btn-sm btn-outline-primary fw-semibold d-inline-flex align-items-center gap-1 px-3" href="{{ route('seller.login') }}">
+                                <i class="bi bi-shop-window"></i>
+                                <span>Seller Portal</span>
                             </a>
                         </li>
                     @endif

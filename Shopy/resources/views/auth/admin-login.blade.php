@@ -22,7 +22,7 @@
                             <label class="form-label fw-semibold">Admin Email</label>
                             <div class="input-group">
                                 <span class="input-group-text bg-light"><i class="bi bi-envelope"></i></span>
-                                <input type="email" name="email" class="form-control" value="{{ old('email', 'admin@shopy.com') }}" required autofocus>
+                                <input type="email" name="email" class="form-control" value="{{ old('email') }}" placeholder="admin@example.com" required autofocus>
                             </div>
                         </div>
 
@@ -30,16 +30,15 @@
                             <label class="form-label fw-semibold">Password</label>
                             <div class="input-group">
                                 <span class="input-group-text bg-light"><i class="bi bi-lock"></i></span>
-                                <input type="password" name="password" class="form-control" value="password123" required>
+                                <input type="password" name="password" class="form-control" placeholder="Enter admin password" required>
                             </div>
                         </div>
 
                         <div class="d-flex justify-content-between align-items-center mb-4">
                             <div class="form-check">
-                                <input class="form-check-input" type="checkbox" name="remember" id="adminRemember" checked>
+                                <input class="form-check-input" type="checkbox" name="remember" id="adminRemember">
                                 <label class="form-check-label small" for="adminRemember">Remember me</label>
                             </div>
-                            <span class="small text-muted">Demo: admin@shopy.com / password123</span>
                         </div>
 
                         <button type="submit" class="btn btn-dark w-100 py-2">
